@@ -1,7 +1,6 @@
 
-# Client-Server Chat Application:
-
-# Features.
+# Client-Server Chat Application Features
+### !!!! CLI only, no GUI !!!!!
 
 1. **User authentication with unique usernames.** (TODO)
 
@@ -33,39 +32,42 @@ Ensure the program gracefully handles errors such as invalid usernames, duplicat
 chat history, or customizable user statuses).
 
 
-### !!!! CLI only, no GUI !!!!!
+
 
 # Instructions to run the application.
 
 Right click `server.py` and `client.py`
 
-# Other TODOS(1500-2500)
+# Other TODOS
 2. **AI-Driven Development Process** (TODO)
 
-    `Use ChatGPT (or another generative AI tool) to assist in generating and refining code.`
+`Use ChatGPT (or another generative AI tool) to assist in generating and refining code.`
 
-    2.1 Document the AI interaction - Prompts, response and subsequent Changes
-    2.2 Critique - Strengths and weaknesses and code quality
+2.1 Document the AI interaction - Prompts, response and subsequent Changes
+   
+2.2 Critique - Strengths and weaknesses and code quality
+   
 3. **Test Plan & Test Cases** (TODO)
+   
 `Create a comprehensive test plan detailing how you tested each mandatory feature and your additional enhancement(s).`
 
-    3.1 Normal flows and edge cases
-    3.2 AI test cases
-    3.3 Create a test case with purpose, steps, expected result and real result
+3.1 Normal flows and edge cases
+
+3.2 AI test cases
+
+3.3 Create a test case with purpose, steps, expected result and real result
+
 4. **Architectural Design - UML** (TODO)
-`
-Provide UML and architectural diagrams (e.g., class diagrams or module diagrams, sequence diagrams) illustrating how the client(s) and server interact, including the chat application message format, protocol, message sequencing, etc.
-`
+   
+`Provide UML and architectural diagrams (e.g., class diagrams or module diagrams, sequence diagrams) illustrating how the client(s) and server interact, including the chat application message format, protocol, message sequencing, etc.`
 
-` 
-Show how messages are handled, how group membership is stored, and how various commands are processed.
-`
+`Show how messages are handled, how group membership is stored, and how various commands are processed.`
 
-`
-In the report, discuss how/why you arrived at (or evolved from) ChatGPT’s initial design suggestions.
-`
+`In the report, discuss how/why you arrived at (or evolved from) ChatGPT’s initial design suggestions.`
 
 5. **Video demonstration** (TODO)
+
+6. **Report** (TODO)
 
 # Group members
 
