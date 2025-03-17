@@ -128,7 +128,7 @@ def group(client_socket, msg):
     if msg[1] == "set":
         #TODO ensure user is in clients?
         if len(msg) <= 3:
-            invalidarg(client_socket, "group set", 3)
+            invalidarg(client_socket, "group set", 4)
             return
 
         if group not in Groups:
@@ -144,7 +144,7 @@ def group(client_socket, msg):
 
     if msg[1] == "send":
         if len(msg) <= 3:
-            invalidarg(client_socket, "group send", 3)
+            invalidarg(client_socket, "group send", 4)
             return
 
         if group not in Groups:
@@ -164,6 +164,45 @@ def group(client_socket, msg):
             csocket = socketfromusername(member)
             csocket.send(message.encode(FORMAT))
 
+        return
+
+    if msg[1] == "leave":
+        if len(msg) <= 2:
+            invalidarg(client_socket, "group leave", 3)
+            return
+
+        if group not in Groups:
+            #TODO refactor invalidarg to account for other error messages
+            message = "Group not found!"
+            client_socket.send(message.encode(FORMAT))
+            return
+
+        members = Groups.get(group)
+        if msg[2] not in members:
+            #TODO refactor invalidarg to account for other error messages
+            message = "Member not in group!"
+            client_socket.send(message.encode(FORMAT))
+            return
+
+        members.remove(msg[2])
+        print(members)
+        return
+
+    if msg[1] == "delete":
+        if len(msg) <= 2:
+            invalidarg(client_socket, "group delete", 3)
+            return
+
+        if group not in Groups:
+            #TODO refactor invalidarg to account for other error messages
+            message = "Group not found!"
+            client_socket.send(message.encode(FORMAT))
+            return
+
+        Groups.pop(group)
+        print(Groups)
+        return
+
 #def checkusername(username):
 def socketfromusername(username):
     for i in range(len(Clients)):
@@ -173,7 +212,7 @@ def socketfromusername(username):
 
 #consolidated arg number error return function
 def invalidarg(client_socket, cmdtype, count):
-    message = f"erroneous command usage :{cmdtype}, requires more than {count} arguments"
+    message = f"erroneous command usage :{cmdtype}, requires at least {count} arguments"
     client_socket.send(message.encode(FORMAT))
 
 print("[STARTING] server is starting...")
