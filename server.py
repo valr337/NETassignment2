@@ -177,14 +177,18 @@ def group(client_socket, msg):
             client_socket.send(message.encode(FORMAT))
             return
 
+        name = usernamefromsocket(client_socket)
         members = Groups.get(group)
-        if msg[2] not in members:
+
+        print(name)
+
+        if name not in members:
             #TODO refactor invalidarg to account for other error messages
-            message = "Member not in group!"
+            message = "You are not a member of this group!"
             client_socket.send(message.encode(FORMAT))
             return
 
-        members.remove(msg[2])
+        members.remove(name)
         print(members)
         return
 
@@ -209,6 +213,10 @@ def socketfromusername(username):
         if Clients[i]['client_name'] == username:
             return Clients[i]['client_socket']
 
+def usernamefromsocket(socket):
+    for i in range(len(Clients)):
+        if Clients[i]['client_socket'] == socket:
+            return Clients[i]['client_name']
 
 #consolidated arg number error return function
 def invalidarg(client_socket, cmdtype, count):
