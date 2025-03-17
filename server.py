@@ -133,12 +133,14 @@ def group(client_socket, msg):
 
         if group not in Groups:
             Groups[group] = [] #create new dictionary key of group
-            members = Groups.get(group)
-            for i in range(3, len(msg)):
+
+        members = Groups.get(group)
+        for i in range(3, len(msg)):
+            if msg[i] not in members:
                 members.append(msg[i])
 
-            Groups[group] = members
-            print(Groups)
+        Groups[group] = members
+        print(Groups)
 
     if msg[1] == "send":
         if len(msg) <= 3:
@@ -155,7 +157,6 @@ def group(client_socket, msg):
         #concantate remaining msg into one string
         for i in range(3, len(msg)):
             message += msg[i] + " "
-
         message = message[:-1]
 
         members = Groups.get(group)
