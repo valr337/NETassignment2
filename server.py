@@ -35,22 +35,17 @@ def handle_client(conn, addr, client):
             #command format| @command_msg<space>msg
             #check if command
             if msg[0] == "@":
-                if msg == "@names":
+                msg = msg.split(" ")
+                if msg[0] == "@names":
                     names(client_socket)
 
-                #split after commands that require no args, as msg[0] will be null otherwise
-                msg = msg.split(" ")
-
                 #group management
-                if msg[0] == "@group":
+                elif msg[0] == "@group":
                     group(client_socket, msg)
 
-                #not done as spec requires @<username>
-                if msg[0] == "@username":
-                    username(client_socket, msg[1], msg[2])
-
-
-
+                #private message
+                else:
+                    privatemessage(client_socket, msg)
 
             #conn.send("Msg received".encode(FORMAT))
             #broadcast(client_name + " msg: " + msg, client_socket)
@@ -215,6 +210,30 @@ def group(client_socket, msg):
         return
 
 
+def privatemessage(client_socket, msg):
+
+    if len(msg) <= 1:
+        errormessage(client_socket, "private message", 2, "")
+        return
+
+    if msg[1] == "":
+        errormessage(client_socket, "", "", "Empty message!")
+        return
+
+    name = msg[0][1:]
+    message = msg[1]
+
+
+    for client in Clients:
+        if name == client['client_name']:
+            message = f"message from {client_socket}: {message}"
+            c_socket = socketfromusername(name)
+            c_socket.send(message.encode(FORMAT))
+            return
+
+    #if client is not found
+    errormessage(client_socket, "", "", "Recipient not found!")
+
 def socketfromusername(username):
     for i in range(len(Clients)):
         if Clients[i]['client_name'] == username:
@@ -233,7 +252,7 @@ def errormessage(client_socket, cmdtype, count, msg):
         #potentially unsafe
         client_socket.send(msg.encode(FORMAT))
     else:
-        message = f"erroneous command usage :{cmdtype}, requires at least {count} arguments"
+        message = f"erroneous command usage : {cmdtype}, requires at least {count} arguments"
         client_socket.send(message.encode(FORMAT))
 
 print("[STARTING] server is starting...")
