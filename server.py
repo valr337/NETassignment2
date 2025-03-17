@@ -134,6 +134,10 @@ def group(client_socket, msg):
         if group not in Groups:
             Groups[group] = [] #create new dictionary key of group
 
+        if group in Groups:
+            message = "Group already exists!"
+            client_socket.send(message.encode(FORMAT))
+
         members = Groups.get(group)
         for i in range(3, len(msg)):
             if msg[i] not in members:
