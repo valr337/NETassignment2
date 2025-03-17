@@ -48,19 +48,15 @@ def handle_client(conn, addr, client):
                 if msg[0] == "@names":
                     names(client_socket)
 
-                #group management
                 elif msg[0] == "@group":
                     group(client_socket, msg)
+
                 elif msg[0] == "@help":
                     for cmd in HelpCommands:
                         client_socket.send(cmd.encode(FORMAT))
-                #private message
+
                 else:
                     privatemessage(client_socket, msg)
-
-            #conn.send("Msg received".encode(FORMAT))
-            #broadcast(client_name + " msg: " + msg, client_socket)
-
 
 def start():
     server.listen()
@@ -130,14 +126,14 @@ def username(client_socket, recipient, msg):
 
 
 def group(client_socket, msg):
-    message = ""
     print(msg)
-    group = msg[2]
-
-    #checks if @group cmd only has 1 arg
-    if len(msg) <= 1:
-        errormessage(client_socket, "group", 1, "")
+    #checks if @group cmd only has 2 arg
+    if len(msg) <= 2:
+        errormessage(client_socket, "group", 2, "")
         return
+
+    message = ""
+    group = msg[2]
 
     if msg[1] == "set":
         #TODO ensure user exists in current context?
@@ -145,6 +141,7 @@ def group(client_socket, msg):
             errormessage(client_socket, "group set", 4, "")
             return
 
+        #TODO Defined in spec that once group is created, adding new members is not possible?
         if group in Groups:
             message = "Group already exists!"
             errormessage(client_socket, "", "", message)
@@ -235,6 +232,7 @@ def privatemessage(client_socket, msg):
     name = msg[0][1:]
     message = msg[1]
 
+    #TODO change socket to username
     for client in Clients:
         if name == client['client_name']:
             message = f"message from {client_socket}: {message}"
@@ -245,6 +243,7 @@ def privatemessage(client_socket, msg):
     #if client is not found
     errormessage(client_socket, "", "", "Recipient not found!")
     return
+
 
 def socketfromusername(username):
     for i in range(len(Clients)):
