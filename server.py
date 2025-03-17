@@ -15,6 +15,15 @@ server.bind(ADDR)
 
 Clients = []
 Groups = {}
+HelpCommands = [
+    "@quit:Disconnect from server",
+    "@names:List all connected clients",
+    "@username <message>: Sends a private msg",
+    "@group set ggg xxx, yyy, zzz Creates a group ggg with specified members xxx, yyy, zzz",
+    "@group send ggg <message> Sends a message to all members of group ggg",
+    "@group leave ggg Removes the user from group ggg.",
+    "@group delete ggg Deletes the group ggg."
+]
 
 
 def handle_client(conn, addr, client):
@@ -42,7 +51,9 @@ def handle_client(conn, addr, client):
                 #group management
                 elif msg[0] == "@group":
                     group(client_socket, msg)
-
+                elif msg[0] == "@help":
+                    for cmd in HelpCommands:
+                        client_socket.send(cmd.encode(FORMAT))
                 #private message
                 else:
                     privatemessage(client_socket, msg)
@@ -58,6 +69,7 @@ def start():
         conn, addr = server.accept()
         print(f"[NEW CONNECTION] {addr} connected")
 
+        #TODO refactor this to handle duplicate usernames
         client_name = conn.recv(1024).decode()
         client = {'client_name': client_name, 'client_socket': conn}
 
@@ -147,6 +159,7 @@ def group(client_socket, msg):
 
         Groups[group] = members
         print(Groups)
+        return
 
     if msg[1] == "send":
         if len(msg) <= 3:
@@ -211,7 +224,6 @@ def group(client_socket, msg):
 
 
 def privatemessage(client_socket, msg):
-
     if len(msg) <= 1:
         errormessage(client_socket, "private message", 2, "")
         return
@@ -223,7 +235,6 @@ def privatemessage(client_socket, msg):
     name = msg[0][1:]
     message = msg[1]
 
-
     for client in Clients:
         if name == client['client_name']:
             message = f"message from {client_socket}: {message}"
@@ -233,6 +244,7 @@ def privatemessage(client_socket, msg):
 
     #if client is not found
     errormessage(client_socket, "", "", "Recipient not found!")
+    return
 
 def socketfromusername(username):
     for i in range(len(Clients)):
@@ -254,6 +266,7 @@ def errormessage(client_socket, cmdtype, count, msg):
     else:
         message = f"erroneous command usage : {cmdtype}, requires at least {count} arguments"
         client_socket.send(message.encode(FORMAT))
+
 
 print("[STARTING] server is starting...")
 start()
