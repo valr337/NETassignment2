@@ -3,10 +3,10 @@ import os
 import sys
 import threading
 
-HEADER = 64
+HEADER = 1024
 PORT = 5050
 FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
+DISCONNECT_MESSAGE = "@quit"
 
 SERVER = "127.0.1.1"
 ADDR = (SERVER, PORT)
@@ -32,7 +32,7 @@ def receive_message():
 def chat():
     while True:
         client_input = input("")
-        client_message = name + ":" + client_input.strip("\n")
+        client_message = client_input.strip("\n")
         send(client_message)
 
 # First send is username
