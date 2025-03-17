@@ -16,6 +16,7 @@ server.bind(ADDR)
 Clients = []
 Groups = {}
 
+
 def handle_client(conn, addr, client):
     client_name = client['client_name']
     client_socket = conn
@@ -48,6 +49,9 @@ def handle_client(conn, addr, client):
                 if msg[0] == "@username":
                     username(client_socket, msg[1], msg[2])
 
+
+
+
             #conn.send("Msg received".encode(FORMAT))
             #broadcast(client_name + " msg: " + msg, client_socket)
 
@@ -70,7 +74,7 @@ def start():
         print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
 
-def broadcast(message, sender_conn=None,):
+def broadcast(message, sender_conn=None, ):
     for client in Clients:
         client_socket = client['client_socket']
         if client_socket != sender_conn:  # Avoid sending the message back to the sender
@@ -78,6 +82,7 @@ def broadcast(message, sender_conn=None,):
                 client_socket.send(message.encode(FORMAT))
             except Exception as e:
                 print(f"[ERROR] Failed to send message to {client['client_name']}: {e}")
+
 
 def broadcastall(message, sender_conn=None):
     for client in Clients:
@@ -88,17 +93,18 @@ def broadcastall(message, sender_conn=None):
             except Exception as e:
                 print(f"[ERROR] Failed to send message to {client['client_name']}: {e}")
 
+
 def names(client_socket):
     message = "Connected: "
     for client in Clients:
-        message+= f"{client['client_name']}, "
+        message += f"{client['client_name']}, "
 
     #remove last comma + space
     message = message[:-2]
     client_socket.send(message.encode(FORMAT))
 
-def username(client_socket, recipient, msg):
 
+def username(client_socket, recipient, msg):
     #if message is empty
     if not msg:
         message = "Empty message!"
@@ -115,6 +121,7 @@ def username(client_socket, recipient, msg):
     message = "Recipient not found!"
     client_socket.send(message.encode(FORMAT))
 
+
 def group(client_socket, msg):
     message = ""
     print(msg)
@@ -122,21 +129,21 @@ def group(client_socket, msg):
 
     #checks if @group cmd only has 1 arg
     if len(msg) <= 1:
-        invalidarg(client_socket,"group",1)
+        errormessage(client_socket, "group", 1, "")
         return
 
     if msg[1] == "set":
-        #TODO ensure user is in clients?
+        #TODO ensure user exists in current context?
         if len(msg) <= 3:
-            invalidarg(client_socket, "group set", 4)
+            errormessage(client_socket, "group set", 4, "")
             return
-
-        if group not in Groups:
-            Groups[group] = [] #create new dictionary key of group
 
         if group in Groups:
             message = "Group already exists!"
-            client_socket.send(message.encode(FORMAT))
+            errormessage(client_socket, "", "", message)
+            return
+        else:
+            Groups[group] = []  #create new dictionary key of group
 
         members = Groups.get(group)
         for i in range(3, len(msg)):
@@ -148,13 +155,12 @@ def group(client_socket, msg):
 
     if msg[1] == "send":
         if len(msg) <= 3:
-            invalidarg(client_socket, "group send", 4)
+            errormessage(client_socket, "group send", 4, "")
             return
 
         if group not in Groups:
-            #TODO refactor invalidarg to account for other error messages
             message = "Group not found!"
-            client_socket.send(message.encode(FORMAT))
+            errormessage(client_socket, "", "", message)
             return
 
         message = ""
@@ -172,13 +178,12 @@ def group(client_socket, msg):
 
     if msg[1] == "leave":
         if len(msg) <= 2:
-            invalidarg(client_socket, "group leave", 3)
+            errormessage(client_socket, "group leave", 3, "")
             return
 
         if group not in Groups:
-            #TODO refactor invalidarg to account for other error messages
             message = "Group not found!"
-            client_socket.send(message.encode(FORMAT))
+            errormessage(client_socket, "", "", message)
             return
 
         name = usernamefromsocket(client_socket)
@@ -187,9 +192,8 @@ def group(client_socket, msg):
         print(name)
 
         if name not in members:
-            #TODO refactor invalidarg to account for other error messages
             message = "You are not a member of this group!"
-            client_socket.send(message.encode(FORMAT))
+            errormessage(client_socket, "", "", message)
             return
 
         members.remove(name)
@@ -198,34 +202,39 @@ def group(client_socket, msg):
 
     if msg[1] == "delete":
         if len(msg) <= 2:
-            invalidarg(client_socket, "group delete", 3)
+            errormessage(client_socket, "group delete", 3, "")
             return
 
         if group not in Groups:
-            #TODO refactor invalidarg to account for other error messages
             message = "Group not found!"
-            client_socket.send(message.encode(FORMAT))
+            errormessage(client_socket, "", "", message)
             return
 
         Groups.pop(group)
         print(Groups)
         return
 
-#def checkusername(username):
+
 def socketfromusername(username):
     for i in range(len(Clients)):
         if Clients[i]['client_name'] == username:
             return Clients[i]['client_socket']
+
 
 def usernamefromsocket(socket):
     for i in range(len(Clients)):
         if Clients[i]['client_socket'] == socket:
             return Clients[i]['client_name']
 
+
 #consolidated arg number error return function
-def invalidarg(client_socket, cmdtype, count):
-    message = f"erroneous command usage :{cmdtype}, requires at least {count} arguments"
-    client_socket.send(message.encode(FORMAT))
+def errormessage(client_socket, cmdtype, count, msg):
+    if msg != "":
+        #potentially unsafe
+        client_socket.send(msg.encode(FORMAT))
+    else:
+        message = f"erroneous command usage :{cmdtype}, requires at least {count} arguments"
+        client_socket.send(message.encode(FORMAT))
 
 print("[STARTING] server is starting...")
 start()
