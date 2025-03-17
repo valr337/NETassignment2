@@ -117,21 +117,20 @@ def username(client_socket, recipient, msg):
 
 def group(client_socket, msg):
     message = ""
+    print(msg)
+    group = msg[2]
 
     #checks if @group cmd only has 1 arg
     if len(msg) <= 1:
         invalidarg(client_socket,"group",1)
         return
 
-    group = msg[2]
-
-    print(msg)
     if msg[1] == "set":
+        #TODO ensure user is in clients?
         if len(msg) <= 3:
             invalidarg(client_socket, "group set", 3)
             return
 
-        print(msg)
         if group not in Groups:
             Groups[group] = [] #create new dictionary key of group
             members = Groups.get(group)
@@ -141,8 +140,34 @@ def group(client_socket, msg):
             Groups[group] = members
             print(Groups)
 
+    if msg[1] == "send":
+        if len(msg) <= 3:
+            invalidarg(client_socket, "group send", 3)
+            return
+
+        if group not in Groups:
+            #TODO refactor invalidarg to account for other error messages
+            message = "Group not found!"
+            client_socket.send(message.encode(FORMAT))
+            return
+
+        message = ""
+        #concantate remaining msg into one string
+        for i in range(3, len(msg)):
+            message += msg[i] + " "
+
+        message = message[:-1]
+
+        members = Groups.get(group)
+        for member in members:
+            csocket = socketfromusername(member)
+            csocket.send(message.encode(FORMAT))
 
 #def checkusername(username):
+def socketfromusername(username):
+    for i in range(len(Clients)):
+        if Clients[i]['client_name'] == username:
+            return Clients[i]['client_socket']
 
 
 #consolidated arg number error return function
