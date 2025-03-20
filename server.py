@@ -66,13 +66,12 @@ def start():
         conn, addr = server.accept()
         print(f"[NEW CONNECTION] {addr} connected")
 
-        #TODO refactor this to handle duplicate usernames
         while True:
             print("HERE")
             client_name = conn.recv(HEADER).decode(FORMAT)
             if client_name not in Users:
                 break
-            errormessage(conn, "", "", "Username in use!")
+            errormessage(conn, "", "", "Username in use! Renter username.")
 
         Users.append(client_name)
         client = {'client_name': client_name, 'client_socket': conn}
