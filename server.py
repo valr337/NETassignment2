@@ -15,6 +15,7 @@ server.bind(ADDR)
 
 Clients = []
 Groups = {}
+Users = []
 HelpCommands = [
     "@quit:Disconnect from server",
     "@names:List all connected clients",
@@ -66,7 +67,14 @@ def start():
         print(f"[NEW CONNECTION] {addr} connected")
 
         #TODO refactor this to handle duplicate usernames
-        client_name = conn.recv(1024).decode()
+        while True:
+            print("HERE")
+            client_name = conn.recv(HEADER).decode(FORMAT)
+            if client_name not in Users:
+                break
+            errormessage(conn, "", "", "Username in use!")
+
+        Users.append(client_name)
         client = {'client_name': client_name, 'client_socket': conn}
 
         Clients.append(client)
