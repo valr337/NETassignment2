@@ -28,6 +28,8 @@ HelpCommands = [  # List of help commands
     "@group delete ggg Deletes the group ggg."
 ]
 
+
+#TODO handle messages that are above 1024 size
 def handle_client(conn, addr, client):
     """Handle communication with a connected client."""
     client_name = client['client_name']
@@ -57,6 +59,7 @@ def handle_client(conn, addr, client):
                 else:
                     privatemessage(client_socket, msg)
 
+
 def start():
     """Start the server and accept incoming connections."""
     server.listen()
@@ -80,6 +83,7 @@ def start():
         thread.start()
         print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
+
 def broadcast(message, sender_conn=None):
     """Broadcast a message to all connected clients except the sender."""
     for client in Clients:
@@ -89,6 +93,7 @@ def broadcast(message, sender_conn=None):
                 client_socket.send(message.encode(FORMAT))
             except Exception as e:
                 print(f"[ERROR] Failed to send message to {client['client_name']}: {e}")
+
 
 def broadcastall(message, sender_conn=None):
     """Broadcast a message to all connected clients including the sender."""
@@ -100,6 +105,7 @@ def broadcastall(message, sender_conn=None):
             except Exception as e:
                 print(f"[ERROR] Failed to send message to {client['client_name']}: {e}")
 
+
 def names(client_socket):
     """Send a list of connected clients to the requesting client."""
     message = "Connected: "
@@ -107,6 +113,7 @@ def names(client_socket):
         message += f"{client['client_name']}, "
     message = message[:-2]  # Remove last comma + space
     client_socket.send(message.encode(FORMAT))
+
 
 def username(client_socket, recipient, msg):
     """Send a private message to a specific client."""
@@ -123,6 +130,7 @@ def username(client_socket, recipient, msg):
 
     message = "Recipient not found!"
     client_socket.send(message.encode(FORMAT))
+
 
 def group(client_socket, msg):
     """Handle group-related commands."""
@@ -215,6 +223,7 @@ def group(client_socket, msg):
         print(Groups)
         return
 
+
 def privatemessage(client_socket, msg):
     """Send a private message to a specific client."""
     if len(msg) <= 1:
@@ -239,17 +248,20 @@ def privatemessage(client_socket, msg):
     errormessage(client_socket, "", "", "Recipient not found!")
     return
 
+
 def socketfromusername(username):
     """Get the socket object for a given username."""
     for i in range(len(Clients)):
         if Clients[i]['client_name'] == username:
             return Clients[i]['client_socket']
 
+
 def usernamefromsocket(socket):
     """Get the username for a given socket object."""
     for i in range(len(Clients)):
         if Clients[i]['client_socket'] == socket:
             return Clients[i]['client_name']
+
 
 def errormessage(client_socket, cmdtype, count, msg):
     """Send an error message to the client."""
@@ -258,6 +270,7 @@ def errormessage(client_socket, cmdtype, count, msg):
     else:
         message = f"erroneous command usage : {cmdtype}, requires at least {count} arguments"
         client_socket.send(message.encode(FORMAT))
+
 
 print("[STARTING] server is starting...")
 start()
