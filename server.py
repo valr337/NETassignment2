@@ -240,10 +240,11 @@ def privatemessage(client_socket, msg):
     name = msg[0][1:]
     message = msg[1]
 
-    #TODO change socket to username
+
     for client in Clients:
         if name == client['client_name']:
-            message = f"message from {client_socket}: {message}"
+            sender = usernamefromsocket(client_socket)
+            message = f"message from {sender}: {message}"
             c_socket = socketfromusername(name)
             c_socket.send(message.encode(FORMAT))
             return
