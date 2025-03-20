@@ -1,22 +1,24 @@
 import socket
 import threading
 
-#potential issue with small header
-HEADER = 1024
+# Constants for server configuration
+HEADER = 1024  # Potential issue: Small header size
 PORT = 5050
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "@quit"
 
+# Server setup
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server.bind(ADDR)
 
-Clients = []
-Groups = {}
-Users = []
-HelpCommands = [
+# Global data structures
+Clients = []  # List of connected clients
+Groups = {}  # Dictionary to store groups
+Users = []  # List of usernames
+HelpCommands = [  # List of help commands
     "@quit:Disconnect from server",
     "@names:List all connected clients",
     "@username <message>: Sends a private msg",
@@ -26,8 +28,8 @@ HelpCommands = [
     "@group delete ggg Deletes the group ggg."
 ]
 
-
 def handle_client(conn, addr, client):
+    """Handle communication with a connected client."""
     client_name = client['client_name']
     client_socket = conn
 
@@ -35,31 +37,28 @@ def handle_client(conn, addr, client):
         msg = conn.recv(HEADER).decode(FORMAT)
 
         if not msg or msg == DISCONNECT_MESSAGE:
-            #@quit is handled here
+            # Handle client disconnect
             broadcast(client_name + " disconnected")
             Clients.remove(client)
             client_socket.close()
             break
         else:
             print(f"[{client_name}] {msg}")
-            #command format| @command_msg<space>msg
-            #check if command
+            # Check if the message is a command
             if msg[0] == "@":
                 msg = msg.split(" ")
                 if msg[0] == "@names":
                     names(client_socket)
-
                 elif msg[0] == "@group":
                     group(client_socket, msg)
-
                 elif msg[0] == "@help":
                     for cmd in HelpCommands:
                         client_socket.send(cmd.encode(FORMAT))
-
                 else:
                     privatemessage(client_socket, msg)
 
 def start():
+    """Start the server and accept incoming connections."""
     server.listen()
     print(f"[LISTENING] Server is listening on {SERVER}")
     while True:
@@ -67,7 +66,6 @@ def start():
         print(f"[NEW CONNECTION] {addr} connected")
 
         while True:
-            print("HERE")
             client_name = conn.recv(HEADER).decode(FORMAT)
             if client_name not in Users:
                 break
@@ -75,7 +73,6 @@ def start():
 
         Users.append(client_name)
         client = {'client_name': client_name, 'client_socket': conn}
-
         Clients.append(client)
         print(Clients)
 
@@ -83,39 +80,36 @@ def start():
         thread.start()
         print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
-
-def broadcast(message, sender_conn=None, ):
+def broadcast(message, sender_conn=None):
+    """Broadcast a message to all connected clients except the sender."""
     for client in Clients:
         client_socket = client['client_socket']
-        if client_socket != sender_conn:  # Avoid sending the message back to the sender
+        if client_socket != sender_conn:
             try:
                 client_socket.send(message.encode(FORMAT))
             except Exception as e:
                 print(f"[ERROR] Failed to send message to {client['client_name']}: {e}")
-
 
 def broadcastall(message, sender_conn=None):
+    """Broadcast a message to all connected clients including the sender."""
     for client in Clients:
         client_socket = client['client_socket']
-        if client_socket != sender_conn:  # Avoid sending the message back to the sender
+        if client_socket != sender_conn:
             try:
                 client_socket.send(message.encode(FORMAT))
             except Exception as e:
                 print(f"[ERROR] Failed to send message to {client['client_name']}: {e}")
 
-
 def names(client_socket):
+    """Send a list of connected clients to the requesting client."""
     message = "Connected: "
     for client in Clients:
         message += f"{client['client_name']}, "
-
-    #remove last comma + space
-    message = message[:-2]
+    message = message[:-2]  # Remove last comma + space
     client_socket.send(message.encode(FORMAT))
 
-
 def username(client_socket, recipient, msg):
-    #if message is empty
+    """Send a private message to a specific client."""
     if not msg:
         message = "Empty message!"
         client_socket.send(message.encode(FORMAT))
@@ -127,14 +121,12 @@ def username(client_socket, recipient, msg):
             client_socket.send(message.encode(FORMAT))
             return
 
-    #if client is not found
     message = "Recipient not found!"
     client_socket.send(message.encode(FORMAT))
 
-
 def group(client_socket, msg):
+    """Handle group-related commands."""
     print(msg)
-    #checks if @group cmd only has 2 arg
     if len(msg) <= 2:
         errormessage(client_socket, "group", 2, "")
         return
@@ -143,18 +135,16 @@ def group(client_socket, msg):
     group = msg[2]
 
     if msg[1] == "set":
-        #TODO ensure user exists in current context?
         if len(msg) <= 3:
             errormessage(client_socket, "group set", 4, "")
             return
 
-        #TODO Defined in spec that once group is created, adding new members is not possible?
         if group in Groups:
             message = "Group already exists!"
             errormessage(client_socket, "", "", message)
             return
         else:
-            Groups[group] = []  #create new dictionary key of group
+            Groups[group] = []
 
         members = Groups.get(group)
         for i in range(3, len(msg)):
@@ -176,7 +166,6 @@ def group(client_socket, msg):
             return
 
         message = ""
-        #concantate remaining msg into one string
         for i in range(3, len(msg)):
             message += msg[i] + " "
         message = message[:-1]
@@ -226,8 +215,8 @@ def group(client_socket, msg):
         print(Groups)
         return
 
-
 def privatemessage(client_socket, msg):
+    """Send a private message to a specific client."""
     if len(msg) <= 1:
         errormessage(client_socket, "private message", 2, "")
         return
@@ -239,7 +228,6 @@ def privatemessage(client_socket, msg):
     name = msg[0][1:]
     message = msg[1]
 
-
     for client in Clients:
         if name == client['client_name']:
             sender = usernamefromsocket(client_socket)
@@ -248,32 +236,28 @@ def privatemessage(client_socket, msg):
             c_socket.send(message.encode(FORMAT))
             return
 
-    #if client is not found
     errormessage(client_socket, "", "", "Recipient not found!")
     return
 
-
 def socketfromusername(username):
+    """Get the socket object for a given username."""
     for i in range(len(Clients)):
         if Clients[i]['client_name'] == username:
             return Clients[i]['client_socket']
 
-
 def usernamefromsocket(socket):
+    """Get the username for a given socket object."""
     for i in range(len(Clients)):
         if Clients[i]['client_socket'] == socket:
             return Clients[i]['client_name']
 
-
-#consolidated arg number error return function
 def errormessage(client_socket, cmdtype, count, msg):
+    """Send an error message to the client."""
     if msg != "":
-        #potentially unsafe
         client_socket.send(msg.encode(FORMAT))
     else:
         message = f"erroneous command usage : {cmdtype}, requires at least {count} arguments"
         client_socket.send(message.encode(FORMAT))
-
 
 print("[STARTING] server is starting...")
 start()
