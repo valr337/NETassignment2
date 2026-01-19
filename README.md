@@ -69,19 +69,5 @@ Right click `server.py` and `client.py`
 
 6. **Report** (TODO)
 
-# Group members
 
-Tony Thng 2400645 / 3070592T | (email)
-
-
-Hooi Yong Xiang 2402752 / 3070544H | 2402752@sit.singaporetech.edu.sg
-
-
-Wong Ti Jing, Edward 2401312 / 3070644W | (email)
-
-
-Muniandi Vidyacharan (MV) 2401719 / 3070666M | (email)
-
-
-Kenneth Seet Jun Kiat 2403545 / 3070575S | (email)
 
